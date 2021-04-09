@@ -9,7 +9,9 @@ user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Ge
 options = Options()
 
 # Set the location of google chrome
-options.binary_location = os.getenv('GOOGLE_CHROME_LOCATION')
+GOOGLE_CHROME_LOCATION = os.getenv('GOOGLE_CHROME_LOCATION')
+if GOOGLE_CHROME_LOCATION:
+    options.binary_location = os.getenv('GOOGLE_CHROME_LOCATION')
 
 # set chrome driver properties
 if not bool(os.getenv('RUNNING_DRIVER_LOCALLY', False)):
@@ -30,7 +32,11 @@ def getLinks():
     print(strftime("%Y-%m-%d %H:%M:%S"))
 
     # create chromedriver
-    driver = webdriver.Chrome(executable_path=os.getenv('CHROME_DRIVER_LOCATION'), options=options)
+    CHROME_DRIVER_LOCATION = os.getenv('CHROME_DRIVER_LOCATION')
+    if CHROME_DRIVER_LOCATION:
+        driver = webdriver.Chrome(executable_path=CHROME_DRIVER_LOCATION, options=options)
+    else:
+        driver = webdriver.Chrome(options=options)
 
     # open devsnest youtube channel's videos
     driver.get("https://www.youtube.com/channel/UCkxqJvZRzhM0oaBjbu3ZjFg/videos")
