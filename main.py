@@ -1,4 +1,5 @@
 import os
+import psycopg2
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from time import sleep, time, strftime
@@ -11,7 +12,7 @@ options = Options()
 # Set the location of google chrome
 GOOGLE_CHROME_LOCATION = os.getenv('GOOGLE_CHROME_LOCATION')
 if GOOGLE_CHROME_LOCATION:
-    options.binary_location = os.getenv('GOOGLE_CHROME_LOCATION')
+    options.binary_location = GOOGLE_CHROME_LOCATION
 
 # set chrome driver properties
 if not bool(os.getenv('RUNNING_DRIVER_LOCALLY', False)):
@@ -24,13 +25,7 @@ options.add_argument("--window-size=800,600")
 options.add_argument('--user-agent={}'.format(user_agent))
 
 
-# trackInterval = os.getenv('DN_THA_TRACK_INTERVAL', 60 * 30)  # half an hour in seconds
-
 def getLinks():
-    startTime = time()
-    print(startTime)
-    print(strftime("%Y-%m-%d %H:%M:%S"))
-
     # create chromedriver
     CHROME_DRIVER_LOCATION = os.getenv('CHROME_DRIVER_LOCATION')
     if CHROME_DRIVER_LOCATION:
@@ -47,8 +42,24 @@ def getLinks():
     video.click()
     sleep(5)
 
+    # Get video details
+    ylink = driver.current_url
+    ytitle = driver.title
+
+    # check if video details already collected
+    conn = psycopg2.connect(os.getenv('DN_THA_PG_DB_URL'))
+    cur = conn.cursor()
+    sqlValues = {'ylink': ylink}
+    sqlQuery = "SELECT * FROM classlinks WHERE ylink = %(ylink)s"
+    cur.execute(sqlQuery, sqlValues)
+    rows = cur.fetchall()
+    if len(rows) > 0:
+        conn.close()
+        driver.close()
+        return
+
     # inject java script
-    driver.execute_script(open("../dn-yt-tha-tracker/script.js").read())
+    driver.execute_script(open("./script.js").read())
 
     # get links form javascript
     links = driver.execute_script("return window.getLinks()")
@@ -57,14 +68,23 @@ def getLinks():
     for t in links:
         print(t)
         for l in links[t]:
-            driver.get(l["href"])
+            driver.get(l["url"])
             sleep(5)
-            l["tile"] = driver.title
-            l["href"] = driver.current_url
+            l["title"] = driver.title
+            l["url"] = driver.current_url
             print(l)
         print("----- O -----")
         print()
     sleep(1)
+
+    cur = conn.cursor()
+    sqlValues = {'timestamp': str(int(time())), 'timestr': strftime("%Y-%m-%d %H:%M:%S"),
+                 'ylink': ylink, 'ytitle': ytitle, 'links': str(links)}
+    sqlQuery = "INSERT INTO classlinks (timestamp, timestr, ylink, ytitle, links) \
+                VALUES (%(timestamp)s, %(timestr)s, %(ylink)s, %(ytitle)s, %(links)s)"
+    cur.execute(sqlQuery, sqlValues)
+    conn.commit()
+    conn.close()
 
     # close the driver
     driver.close()
