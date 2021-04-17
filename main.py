@@ -1,5 +1,7 @@
 import os
 import psycopg2
+import json
+
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from time import sleep, time, strftime
@@ -28,67 +30,76 @@ options.add_argument('--user-agent={}'.format(user_agent))
 def getLinks():
     # create chromedriver
     CHROME_DRIVER_LOCATION = os.getenv('CHROME_DRIVER_LOCATION')
+    print(CHROME_DRIVER_LOCATION)
     if CHROME_DRIVER_LOCATION:
         driver = webdriver.Chrome(executable_path=CHROME_DRIVER_LOCATION, options=options)
     else:
         driver = webdriver.Chrome(options=options)
 
-    # open devsnest youtube channel's videos
-    driver.get("https://www.youtube.com/channel/UCkxqJvZRzhM0oaBjbu3ZjFg/videos")
-    sleep(2)
+    try:
+        # open devsnest youtube channel's videos
+        driver.get("https://www.youtube.com/channel/UCkxqJvZRzhM0oaBjbu3ZjFg/videos")
+        sleep(2)
 
-    # open the last video
-    video = driver.find_element_by_id("thumbnail")
-    video.click()
-    sleep(5)
+        # open the last video
+        video = driver.find_element_by_id("thumbnail")
+        video.click()
+        sleep(5)
 
-    # Get video details
-    ylink = driver.current_url
-    ytitle = driver.title
+        # Get video details
+        ylink = driver.current_url
+        ytitle = driver.title
+        print(ytitle)
 
-    # check if video details already collected
-    conn = psycopg2.connect(os.getenv('DN_THA_PG_DB_URL'))
-    cur = conn.cursor()
-    sqlValues = {'ylink': ylink}
-    sqlQuery = "SELECT * FROM classlinks WHERE ylink = %(ylink)s"
-    cur.execute(sqlQuery, sqlValues)
-    rows = cur.fetchall()
-    if len(rows) > 0:
+        # check if video details already collected
+        conn = psycopg2.connect(os.getenv('DN_THA_PG_DB_URL'))
+        cur = conn.cursor()
+        sqlValues = {'ylink': ylink}
+        sqlQuery = "SELECT * FROM classlinks WHERE ylink = %(ylink)s"
+        cur.execute(sqlQuery, sqlValues)
+        rows = cur.fetchall()
+        if len(rows) > 0:
+            conn.close()
+            driver.close()
+            print("Video Already Parsed")
+            return
+
+        # inject java script
+        driver.execute_script(open("./script.js").read())
+
+        # get links form javascript
+        links = driver.execute_script("return window.getLinks()")
+        print("Links obtained")
+
+        # filter links
+        for t in links:
+            print(t)
+            for l in links[t]:
+                driver.get(l["url"])
+                sleep(5)
+                l["title"] = driver.title
+                l["url"] = driver.current_url
+                print(l)
+            print("----- O -----")
+            print()
+        sleep(1)
+
+        cur = conn.cursor()
+        sqlValues = {'timestamp': str(int(time())), 'timestr': strftime("%Y-%m-%d %H:%M:%S"),
+                     'ylink': ylink, 'ytitle': ytitle, 'links': json.dumps(links)}
+        sqlQuery = "INSERT INTO classlinks (timestamp, timestr, ylink, ytitle, links) \
+                    VALUES (%(timestamp)s, %(timestr)s, %(ylink)s, %(ytitle)s, %(links)s)"
+        cur.execute(sqlQuery, sqlValues)
+        conn.commit()
         conn.close()
-        driver.close()
-        return
-
-    # inject java script
-    driver.execute_script(open("./script.js").read())
-
-    # get links form javascript
-    links = driver.execute_script("return window.getLinks()")
-
-    # filter links
-    for t in links:
-        print(t)
-        for l in links[t]:
-            driver.get(l["url"])
-            sleep(5)
-            l["title"] = driver.title
-            l["url"] = driver.current_url
-            print(l)
-        print("----- O -----")
-        print()
-    sleep(1)
-
-    cur = conn.cursor()
-    sqlValues = {'timestamp': str(int(time())), 'timestr': strftime("%Y-%m-%d %H:%M:%S"),
-                 'ylink': ylink, 'ytitle': ytitle, 'links': str(links)}
-    sqlQuery = "INSERT INTO classlinks (timestamp, timestr, ylink, ytitle, links) \
-                VALUES (%(timestamp)s, %(timestr)s, %(ylink)s, %(ytitle)s, %(links)s)"
-    cur.execute(sqlQuery, sqlValues)
-    conn.commit()
-    conn.close()
+    except Exception as e:
+        print(e)
 
     # close the driver
     driver.close()
+    print("Driver Closed")
 
 
 if __name__ == "__main__":
     getLinks()
+    print("Exiting...")

@@ -12,6 +12,9 @@ window.getLinks = function(){
             const haveTHA = (el.innerText.toLowerCase().indexOf("tha") > -1);
             let thaFound = false;
 
+            // If program should search only for questions
+            let questionOnly = true;
+
             // traverse through the description
             for(let child of el.childNodes)
 
@@ -29,19 +32,24 @@ window.getLinks = function(){
                                 links["classQuestions"].push(link);
                         else
                             links["classQuestions"].push(link);
-                    else if (haveTHA)
-                        if (thaFound)
-                            links["otherLinks"].push(link);
+                    else if (!questionOnly)
+                        if (haveTHA)
+                            if (thaFound)
+                                links["otherLinks"].push(link);
+                            else
+                                links["classLinks"].push(link);
                         else
-                            links["classLinks"].push(link);
-                    else
-                        links["otherLinks"].push(link);
+                            links["otherLinks"].push(link);
                 }
                 else if (child.tagName === "SPAN")
                     if(child.innerText.toLowerCase().indexOf("tha") > -1)
                         thaFound = true;
                     else if(child.innerText.toLowerCase().indexOf("github") > -1)
-                        break;
+                        questionOnly = true;
+                    else if(child.innerText.toLowerCase().indexOf("discord") > -1)
+                        questionOnly = true;
+                    else if(child.innerText.toLowerCase().indexOf("notion") > -1)
+                        questionOnly = true;
             return links;
         }
 }
