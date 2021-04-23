@@ -3,28 +3,27 @@ window.getLinks = function(){
     for(let el of document.getElementsByTagName("ytd-video-secondary-info-renderer")[0].getElementsByTagName("yt-formatted-string"))
         if(el.className === "content style-scope ytd-video-secondary-info-renderer"){
             let links = {};
-            links["classLinks"] = []
-            links["classQuestions"] = []
-            links["thaLinks"] = []
-            links["otherLinks"] = []
+            links["classLinks"] = [];
+            links["classQuestions"] = [];
+            links["thaLinks"] = [];
+            links["otherLinks"] = [];
 
             // check if any tha is given
             const haveTHA = (el.innerText.toLowerCase().indexOf("tha") > -1);
             let thaFound = false;
 
             // If program should search only for questions
-            let questionOnly = true;
+            let questionOnly = false;
 
             // traverse through the description
             for(let child of el.childNodes)
-
                 // when there is any link
                 if (child.tagName === "A") {
                     let link = {};
                     link['url'] = child.href;
 
                     // check if the link is of a question
-                    if (child.innerText.toLowerCase().indexOf("leetcode") > -1)
+                    if (child.innerText.toLowerCase().indexOf("leetcode") > -1 || child.innerText.toLowerCase().indexOf("geeksforgeeks") > -1)
                         if (haveTHA)
                             if (thaFound)
                                 links["thaLinks"].push(link);
@@ -50,6 +49,7 @@ window.getLinks = function(){
                         questionOnly = true;
                     else if(child.innerText.toLowerCase().indexOf("notion") > -1)
                         questionOnly = true;
+
             return links;
         }
 }

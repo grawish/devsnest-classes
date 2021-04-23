@@ -30,7 +30,6 @@ options.add_argument('--user-agent={}'.format(user_agent))
 def getLinks():
     # create chromedriver
     CHROME_DRIVER_LOCATION = os.getenv('CHROME_DRIVER_LOCATION')
-    print(CHROME_DRIVER_LOCATION)
     if CHROME_DRIVER_LOCATION:
         driver = webdriver.Chrome(executable_path=CHROME_DRIVER_LOCATION, options=options)
     else:
