@@ -51,7 +51,7 @@ def getLinks():
         print(ytitle)
 
         # check if video details already collected
-        conn = psycopg2.connect(os.getenv('DN_THA_PG_DB_URL'))
+        conn = psycopg2.connect(os.getenv('DATABASE_URL'))
         cur = conn.cursor()
         sqlValues = {'ylink': ylink}
         sqlQuery = "SELECT * FROM classlinks WHERE ylink = %(ylink)s"
