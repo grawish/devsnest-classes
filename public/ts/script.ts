@@ -13,7 +13,7 @@ fetch("/", {
     response.json().then((rows) => {
         let questionCount = 0;
         let thaCount = 0;
-        document.createElement("noscript").remove();
+        document.getElementById("linksOutput").innerHTML = "";
         let lastDayDiv = null;
 
         for(let row of rows){

@@ -4,10 +4,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "npm run build; npm run server",
-    "server": "node index.js",
+    "start": "node index.js",
     "build": "tsc; sass public/scss:public/css --no-source-map;",
-    "dev": " sass --watch  public/scss:public/css --no-source-map & tsc -w & npm run server"
+    "dev": " sass --watch  public/scss:public/css --no-source-map & tsc -w & npm start"
   },
   "dependencies": {
     "express": "^4.17.1",
