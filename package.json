@@ -1,0 +1,19 @@
+{
+  "name": "node-express",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "npm run build; npm run server",
+    "server": "node index.js",
+    "build": "tsc; sass public/scss:public/css --no-source-map;",
+    "dev": " sass --watch  public/scss:public/css --no-source-map & tsc -w & npm run server"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "pg": "^8.6.0",
+    "sass": "^1.32.11",
+    "typescript": "^4.2.4"
+  },
+  "description": ""
+}
