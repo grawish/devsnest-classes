@@ -3,13 +3,13 @@ import psycopg2
 import json
 
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
+# from selenium.webdriver.chrome.options import Options
 from time import sleep, time, strftime
 
 # set up options for the chromedriver
 current_path = os.getcwd()
 user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.183 Safari/537.36"
-options = Options()
+options = webdriver.chrome.options.Options()
 
 # Set the location of google chrome
 GOOGLE_CHROME_LOCATION = os.getenv('GOOGLE_CHROME_LOCATION')
