@@ -14,7 +14,7 @@ div {
 
 #linksOutput {
     border: none;
-    .loading {
+    .loading, .warning{
         display: inline-block;
     }
     > div {

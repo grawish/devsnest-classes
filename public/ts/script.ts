@@ -22,6 +22,7 @@ fetch("/", {
             video.innerHTML = row.ytitle;
             video.href = row.ylink;
             video.target = "_blank";
+            video.rel = "noopener";
             dayDiv.append(video);
 
             let allLinks = row.links = JSON.parse(row.links);
@@ -39,6 +40,7 @@ fetch("/", {
                     link.innerHTML = classLink.title;
                     link.href = classLink.url;
                     link.target = "_blank";
+                    link.rel = "noopener";
                     div.append(link);
                     classLinksDiv.append(div);
                 }
@@ -58,6 +60,7 @@ fetch("/", {
                         classQuestion.title;
                     link.href = classQuestion.url;
                     link.target = "_blank";
+                    link.rel = "noopener";
                     div.append(link)
                     classQuestionsDiv.append(div);
                 }
@@ -77,6 +80,7 @@ fetch("/", {
                         thaLink.title;
                     link.href = thaLink.url;
                     link.target = "_blank";
+                    link.rel = "noopener";
                     div.append(link);
                     thaLinksDiv.append(div);
                 }
@@ -90,3 +94,7 @@ fetch("/", {
         }
     });
 });
+
+window.onload = () => {
+    document.getElementById("linksOutput").innerHTML = "<div class=\"loading\">Loading...</div>";
+}
